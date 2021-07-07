@@ -1,0 +1,858 @@
+swagger: "2.0"
+info:
+  description: "This is the specification for the API of the Frontend-Service of the MemeIt-Project for maue-wise2021. The frontend and this API is written by Talha Dagli, John Einicke and Yoel Berendsohn."
+  version: "2.1.0"
+  title: "MemeIt-Frontend-Service"
+host: "host.frontend.io"
+basePath: "/"
+tags:
+- name: "Search"
+  description: "Everything about giving search-results to the client"
+- name: "User"
+  description: "Everything about letting the client get user"
+- name: "Meme"
+  description: "Everything about getting memes"
+- name: "Health"
+  description: "Everything about getting health statuses"
+
+schemes:
+- "https"
+paths:
+  /search:
+    post:
+      tags:
+      - "Search"
+      summary: "Gets search results"
+      description: "Takes a query and gives a list of search results."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "query"
+        description: "Query-String"
+        required: true
+        schema:
+          properties:
+            query:
+              type: string
+          example:
+            query: "Junior developer memes"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/query_response"
+        500:
+          description: "Service error"
+          schema:
+            properties:
+              message:
+                type: string
+              error:
+                type: string
+              storageServiceResponse:
+                type: string
+            example:
+              message: "Unidentified error"
+              error: ""
+              storageServiceResponse: "Message from Storage Service"
+        400:
+          description: "Invalid Request, when parameters are missing"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Invalid Request"
+        408:
+          description: "Storage Service timed out"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Fetching from Storage Service timed out"
+  /latest:
+    get:
+      tags:
+      - "Search"
+      summary: "Gets 50 latest memes"
+      description: "Gets 50 latest memes"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/query_response"
+        500:
+          description: "Service error"
+          schema:
+            properties:
+              message:
+                type: string
+              error: 
+                type: string
+              storageServiceResponse:
+                type: string
+            example:
+              message: "Unidentified error"
+              error: ""
+              storageServiceResponse: "Message from Storage Service"
+        408:
+          description: "Storage Service timed out"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Fetching from Storage Service timed out"
+  /users/logout:
+    get:
+      tags:
+      - "User"
+      summary: "Log out user"
+      description: "Log out the user. Requires the sending of the cookie containing the authToken created by Log in."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Logout operation"
+          schema:
+            properties:
+             message:
+              type: string
+            example:
+              message: "Successfully logged out"
+        401:
+          description: "Not logged in"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Not logged in"
+  /users/login:
+    post:
+      tags:
+      - "User"
+      summary: "Log in user"
+      description: "Takes an username and a password and tries to log the user in."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "credentials"
+        description: "Username and password"
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+          example:
+            email: "HansRolf@rolf.de"
+            password: "password"
+      responses:
+        200:
+          description: "Successful login operation. Returns cookie with token."
+          schema:
+            properties:
+             message:
+              type: string
+            example:
+              message: "Successfully logged in"
+        401:
+          description: "Wrong email or password"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Wrong email or password"
+        500:
+          description: "Service error"
+          schema:
+            properties:
+              message:
+                type: string
+              error: 
+                type: string
+              userServiceResponse:
+                type: string
+            example:
+              message: "Unidentified error"
+              error: ""
+              userServiceResponse: "Message from User Service"
+        400:
+          description: "Invalid Request, when parameters are missing"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Invalid Request"
+        408:
+          description: "User Service timed out"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Fetching from User Service timed out"
+  /users/register:
+    post:
+      tags:
+      - "User"
+      summary: "Register in user"
+      description: "Takes an username, email address and a password and registers the user."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "Credentials"
+        description: "Username, password and email"
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            name:
+              type: string
+            password:
+              type: string
+          example:
+            email: "email@adress.com"
+            name: "Hans"
+            password: "Rolf"
+      responses:
+        201:
+          description: "Successful register operation."
+          schema:
+            properties:
+             message:
+              type: string
+            example:
+              message: "Successfully registered"
+        409:
+          description: "User with this email already exists"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "User with this email already exist"
+        500:
+          description: "Service error"
+          schema:
+            properties:
+              message:
+                type: string
+              error: 
+                type: string
+              userServiceResponse:
+                type: string
+            example:
+              message: "Unidentified error"
+              error: ""
+              userServiceResponse: "Message from User Service"
+        400:
+          description: "Invalid Request, when parameters are missing"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Invalid Request"
+        408:
+          description: "User Service timed out"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Fetching from User Service timed out"
+  /users/delete:
+    post:
+      tags:
+      - "User"
+      summary: "Delete in user"
+      description: "Requires the sending of the cookie containing the authToken created by Log in. Deletes the currently logged in user."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Successfully deleted user"
+          schema:
+            properties:
+             message:
+              type: string
+            example:
+              message: "Successfully deleted"
+        401:
+          description: "Not logged in"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Not logged in"
+        500:
+          description: "Service error"
+          schema:
+            properties:
+              message:
+                type: string
+              error: 
+                type: string
+              userServiceResponse:
+                type: string
+            example:
+              message: "Unidentified error"
+              error: ""
+              userServiceResponse: "Message from User Service"
+        408:
+          description: "User Service timed out"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Fetching from User Service timed out"
+  /users/favorites:
+    get:
+      tags:
+      - "User"
+      summary: "Get favorites of user"
+      description: "Requires the sending of the cookie containing the authToken created by Log in. Gets the favorites of the currently logged in user."
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Favorites of the user"
+          schema:
+            properties:
+              response:
+                type: array
+            example: 
+              - id: 0
+                memeId: string
+              - id: 1
+                memeId: string
+        401:
+          description: "Not logged in"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Not logged in"
+        500:
+          description: "Service error"
+          schema:
+            properties:
+              message:
+                type: string
+              error: 
+                type: string
+              userServiceResponse:
+                type: string
+            example:
+              message: "Unidentified error"
+              error: ""
+              userServiceResponse: "Message from User Service"
+        408:
+          description: "User Service timed out"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Fetching from User Service timed out"
+    post:
+      tags:
+      - "User"
+      summary: "Favorize meme of user"
+      description: "Requires the sending of the cookie containing the authToken created by Log in. Favorize a meme for the currently logged in user."
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "Body"
+        description: "Username, password and email"
+        required: true
+        schema:
+          properties:
+            memeId:
+              type: string
+          example:
+            memeId: "string"
+      responses:
+        200:
+          description: "Favorite of the user"
+          schema:
+            properties:
+              response:
+                type: array
+            example: 
+              - id: 0
+                memeId: string
+                user:
+                  id: 1
+        400:
+          description: "Invalid Request, when parameters are missing"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Invalid Request"
+        401:
+          description: "Not logged in"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Not logged in"
+        500:
+          description: "Service error"
+          schema:
+            properties:
+              message:
+                type: string
+              error: 
+                type: string
+              userServiceResponse:
+                type: string
+            example:
+              message: "Unidentified error"
+              error: ""
+              userServiceResponse: "Message from User Service"
+        408:
+          description: "User Service timed out"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Fetching from User Service timed out"    
+  /users/favorites/{memeid}:
+    delete:
+      tags:
+      - "User"
+      summary: "Deletes a favorite of user"
+      description: "Requires the sending of the cookie containing the authToken created by Log in. Deletes a favorite of the currently logged in user."
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "memeid"
+        required: true
+        type:
+          string
+      responses:
+        200:
+          description: "Favorites of the user"
+        401:
+          description: "Not logged in"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Not logged in"
+        500:
+          description: "Service error"
+          schema:
+            properties:
+              message:
+                type: string
+              error: 
+                type: string
+              userServiceResponse:
+                type: string
+            example:
+              message: "Unidentified error"
+              error: ""
+              userServiceResponse: "Message from User Service"
+        408:
+          description: "User Service timed out"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Fetching from User Service timed out"         
+  /meme/{memeid}:
+    get:
+      tags:
+      - "Meme"
+      summary: "Get meme by id"
+      description: "Get the memes from the storage and send it as a file."
+      produces:
+      - "file"
+      parameters:
+      - in: "path"
+        name: "memeid"
+        required: true
+        type:
+          string
+      responses:
+        200:
+          description: "Return the meme image."
+          schema:
+            properties:
+             meme:
+              type: string
+            example:
+              file
+        404:
+          description: "Meme not found"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Meme not found"
+        500:
+          description: "Service error"
+          schema:
+            properties:
+              message:
+                type: string
+              error: 
+                type: string
+              storageServiceResponse:
+                type: string
+            example:
+              message: "Unidentified error"
+              error: ""
+              storageServiceResponse: "Message from Storage Service"
+        408:
+          description: "Storage Service timed out"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Fetching from Storage Service timed out"
+        400:
+          description: "Invalid Request, when parameters are missing"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Invalid Request"
+       
+  /health:
+    get:
+      tags:
+      - "Health"
+      summary: "Get health status"
+      description: "Get health status"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Return the status of the service"
+          schema:
+            properties:
+             status:
+              type: string
+            example:
+              status: "ONLINE"        
+  /health/meta:
+    get:
+      tags:
+      - "Health"
+      summary: "Get health data of this service"
+      description: "Get health data of this service"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Returns how many requests the service received since startup"
+          schema:
+            properties:
+             message:
+              type: string
+             numberOfRequests: 
+               type: number
+            example:
+              message:
+                "Got n requests"
+              numberOfRequests:
+                10
+  /health/status:
+    get:
+      tags:
+      - "Health"
+      summary: "Get health statuses from the health service"
+      description: "Get health statuses from the health service"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Returns an array of statuses"
+          schema:
+            properties:
+              serviceStatuses:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    serviceName:
+                      type: string
+                    status:
+                      type: string
+            example:
+              serviceStatuses:
+                - serviceName: INDEX
+                  status: ONLINE
+                - serviceName: USER
+                  status: ONLINE
+                - serviceName: STORAGE
+                  status: ONLINE
+                - serviceName: FRONTEND
+                  status: ONLINE
+        500:
+          description: "Service error"
+          schema:
+            properties:
+              message:
+                type: string
+              error: 
+                type: string
+              healthServiceResponse:
+                type: string
+            example:
+              message: "Unidentified error"
+              error: ""
+              healthServiceResponse: "Message from Health Service"
+        408:
+          description: "Health Service timed out"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Fetching from Health Service timed out"
+  /health/data:
+    get:
+      tags:
+      - "Health"
+      summary: "Get health data from health service"
+      description: "Get health data from health service"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Returns all the data the health service collected"
+          schema:
+            properties:
+             memeCount:
+              type: number
+             popularTags:
+               type: array
+               items:
+                type: object
+                properties:
+                  tagName:
+                    type: string
+                  count:
+                    type: number
+             registeredUsersCount:
+              type: number
+             requestCount: 
+               type: number
+            example:
+              memeCount: 75
+              popularTags:
+                - tagName: foo
+                  count: 155
+                - tagName: quuz
+                  count: 229
+                - tagName: grault
+                  count: 217
+                - tagName: xyzzy
+                  count: 231
+                - tagName: thud
+                  count: 219
+              registeredUsersCount: 97
+              requestCount: 93
+        500:
+          description: "Service error"
+          schema:
+            properties:
+              message:
+                type: string
+              error: 
+                type: string
+              healthServiceResponse:
+                type: string
+            example:
+              message: "Unidentified error"
+              error: ""
+              healthServiceResponse: "Message from Health Service"
+        408:
+          description: "Health Service timed out"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Fetching from Health Service timed out"
+  /health/logs:
+    post:
+      tags:
+      - "Health"
+      summary: "Get logs from health service"
+      description: "Get logs from health service"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "Body"
+        description: "Paging and Limit per page"
+        required: true
+        schema:
+          properties:
+            page:
+              type: number
+            limit:
+              type: number
+          example:
+            page: 1
+            limit: 10
+      responses:
+        200:
+          description: "Returns all the logs the health service collected"
+          schema:
+            properties:
+             data:
+              type: array
+              items: 
+                type: object
+                properties:
+                  info:
+                    type: object
+                    properties:
+                      selfServiceName:
+                        type: string
+                      otherServiceName:
+                        type: string
+                      httpMethod:
+                        type: number
+                      requestedUrl:
+                        type: string
+                      timestamp:
+                        type: string
+             page:
+              type: number
+             limit:
+              type: number
+             totalCount:
+              type: number
+             totalPages:
+              type: number
+            example:
+              data:
+              - info:
+                  selfServiceName: INDEX
+                  otherServiceName: INDEX
+                  httpMethod: GET
+                  statusCode: 200
+                  requestedUrl: 'https://frontend-service.api.datexis.com/'
+                  timestamp: '2020-12-21T14:07:32.847Z'
+              page: 1
+              limit: 10
+              totalCount: 31
+              totalPages: 4
+            
+        500:
+          description: "Service error"
+          schema:
+            properties:
+              message:
+                type: string
+              error: 
+                type: string
+              healthServiceResponse:
+                type: string
+            example:
+              message: "Unidentified error"
+              error: ""
+              healthServiceResponse: "Message from Health Service"
+        408:
+          description: "Health Service timed out"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Fetching from Health Service timed out"
+        400:
+          description: "Invalid request"
+          schema:
+            properties:
+              message:
+                type: string
+            example:
+              message: "Invalid request"
+              
+definitions:
+  query_response:
+    required: 
+    - "memeIds"
+    - "message"
+    properties:
+      memeIds:
+        type: array
+        items:
+          type: string
+      message:
+        type: string
+    example: 
+      1: 
+        createdAt: 14.03.2020
+        tags: ["junior", "git", "python"]
+      2:
+        createdAt: 19.03.2020
+        tags: ["js", "dev", "ops"]
+
+  credentials:
+    required:
+    - "username"
+    - "password"
+    - "email"
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+      email:
+        type: string
+      
+    example:
+      username: "Hans Rolf"
+      password: "Password1"
+      email: "Hans@Rolf.de"
+      
+    

@@ -1,0 +1,54 @@
+stages:
+    - build
+    - test
+
+build-service-image:
+    variables:
+        DOCKER_TLS_CERTDIR: ""
+    stage: build
+    image: docker:latest
+    tags:
+        - docker-privileged
+    services:
+        - docker:dind
+    before_script:
+        - docker info
+    script:
+        - echo "Building has started"
+        - docker build -t service-image .
+
+private-test:
+    variables:
+        DOCKER_TLS_CERTDIR: ""
+    stage: test
+    image: docker:latest
+    tags:
+        - docker-privileged
+    services:
+        - docker:dind
+    before_script:
+        - docker info
+        - docker build -t service-image .
+        - docker pull yb1997/validator-image
+    script:
+        - echo "Testing has started"
+        - docker run -d --name service -p 80:80 -e "FRONTEND_SERVICE_HOST=0.0.0.0" -e "FRONTEND_SERVICE_PORT=80" -e "LOG=Yes" service-image
+        - sleep 5
+        - docker run -v ${PWD}/swagger.yaml:/swagger.yaml -e "API_SERVICE_URL=service" -e "API_SERVICE_PORT=80" -e "LOGLEVEL=2" -p 8080:8080 --link service yb1997/validator-image
+
+public-test:
+     variables:
+         DOCKER_TLS_CERTDIR: ""
+     stage: test
+     image: docker:latest
+     tags:
+         - docker-privileged
+     services:
+         - docker:dind
+     before_script:
+         - docker info
+         - docker pull yb1997/validator-image
+     script:
+        - echo "Testing has started"
+        - docker run -v ${PWD}/swagger.yaml:/swagger.yaml -e "API_SERVICE_URL=frontend-service.api.datexis.com" -e "LOGLEVEL=2" -p 8080:8080 yb1997/validator-image
+

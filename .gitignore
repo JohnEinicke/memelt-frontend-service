@@ -1,0 +1,4 @@
+node_modules
+file.http
+swagger-validator/.env
+swagger-validator/Dockerfile
